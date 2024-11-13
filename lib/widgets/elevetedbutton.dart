@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ElevatedButtonContainer extends StatelessWidget {
   final String buttonText;
   final VoidCallback onPressed;
-  final Color buttonColor;
+  // final Color buttonColor;
   final Color textColor;
   final double width;
   final double height;
@@ -14,7 +14,7 @@ class ElevatedButtonContainer extends StatelessWidget {
     Key? key,
     required this.buttonText,
     required this.onPressed,
-    this.buttonColor = Colors.blue,
+    // this.buttonColor = Colors.grey,
     this.textColor = Colors.white,
     this.width = double.infinity,
     this.height = 70,
@@ -31,7 +31,7 @@ class ElevatedButtonContainer extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all<Color>(buttonColor),
+          //  backgroundColor: MaterialStateProperty.all<Color>(buttonColor),
           shape: MaterialStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: borderRadius,

@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/provider/Provider_Service.dart';
+import 'package:flutter_application_1/provider/Validation_provider.dart';
+import 'package:flutter_application_1/utils/utils.dart';
+import 'package:flutter_application_1/widgets/Radio_Button.dart';
 import 'package:flutter_application_1/widgets/elevetedbutton.dart';
 import 'package:flutter_application_1/widgets/textformfield.dart';
+import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class bmi extends StatefulWidget {
   const bmi({super.key});
@@ -13,33 +19,23 @@ class _bmiState extends State<bmi> {
   String result = "";
   double h = 0;
   double w = 0;
-  void bmicalculate(double hieght, double waight) {
-    double finalresult = waight / (hieght * hieght / 1000);
-    String bmi = finalresult.toStringAsFixed(2);
-    setState(() {
-      result = bmi;
-    });
+  void bmicalculate(double height, double weight) {
+    Provider.of<BmiProvider>(context, listen: false).setHeight(height);
+    Provider.of<BmiProvider>(context, listen: false).setWeight(weight);
+    Provider.of<BmiProvider>(context, listen: false).calculateBMI();
   }
 
-  final TextEditingController hieght = TextEditingController();
-  final TextEditingController waight = TextEditingController();
-  int currentindex = 0;
   @override
   Widget build(BuildContext context) {
+    final validationcontroller =
+        Provider.of<validaiton>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "BMI Calculator",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.settings,
-                color: Colors.black,
-              ))
-        ],
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -48,10 +44,16 @@ class _bmiState extends State<bmi> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 children: [
-                  radioButton("Man", Colors.black, 0),
-                  radioButton('Women', Colors.pink, 1)
+                  RadioButton(
+                    iconData: FontAwesomeIcons.mars, // Use the desired icon
+                    index: 0,
+                  ),
+                  RadioButton(
+                    iconData: FontAwesomeIcons.venus, // Use the desired icon
+                    index: 1,
+                  ),
                 ],
               ),
               const SizedBox(
@@ -64,8 +66,15 @@ class _bmiState extends State<bmi> {
               const SizedBox(
                 height: 8,
               ),
-              CustomTextField(
-                  hintText: 'Enter your height', controller: hieght),
+              Consumer<validaiton>(builder: (context, value, child) {
+                return CustomTextField(
+                    onchange: (String value) {
+                      validationcontroller.validatehight(value);
+                    },
+                    errormessage: value.height.error,
+                    hintText: 'Enter your height',
+                    controller: validationcontroller.heightController);
+              }),
               const SizedBox(
                 height: 8,
               ),
@@ -76,48 +85,83 @@ class _bmiState extends State<bmi> {
               const SizedBox(
                 height: 8,
               ),
-              CustomTextField(
-                  hintText: 'Enter your wieght', controller: waight),
+              Consumer<validaiton>(builder: (context, value, child) {
+                return CustomTextField(
+                    onchange: (String value) {
+                      validationcontroller.validateweight(value);
+                    },
+                    errormessage: value.weight.error,
+                    hintText: 'Enter your wieght',
+                    controller: validationcontroller.waightController);
+              }),
               const SizedBox(
                 height: 8,
               ),
               ElevatedButtonContainer(
-                  buttonText: "Calculate",
-                  onPressed: () {
-                    setState(() {
-                      h = double.parse(hieght.value.text);
-                      w = double.parse(waight.value.text);
-                    });
-                    bmicalculate(h, w);
-                  }),
-              const SizedBox(
-                height: 50,
+                buttonText: "Calculate",
+                onPressed: () {
+                  if (!validationcontroller.isvalid) {
+                    utils.Show_Flushbar_Error_Message(
+                        "Please enter your field", context);
+                  } else {
+                    try {
+                      double heightValue = double.parse(
+                          validationcontroller.heightController.text);
+                      double weightValue = double.parse(
+                          validationcontroller.waightController.text);
+
+                      Provider.of<BmiProvider>(context, listen: false)
+                          .setHeight(heightValue);
+                      Provider.of<BmiProvider>(context, listen: false)
+                          .setWeight(weightValue);
+
+                      bmicalculate(
+                        Provider.of<BmiProvider>(context, listen: false).h,
+                        Provider.of<BmiProvider>(context, listen: false).w,
+                      );
+                    } catch (e) {
+                      utils.Show_Flushbar_Error_Message(
+                          "Invalid numeric values", context);
+                    }
+                  }
+                },
               ),
               const SizedBox(
-                width: double.infinity,
-                child: Text(
-                  "Your BMI is: ",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                height: 20,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    color: Colors.teal),
+                margin: const EdgeInsets.only(left: 40, right: 40),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      " Result: ",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Consumer<BmiProvider>(
+                      builder: (context, bmiProvider, child) => Text(
+                        bmiProvider.result,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 24.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(
-                height: 8,
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: Text(
-                  " $result",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              )
             ],
           ),
         ),
@@ -126,29 +170,6 @@ class _bmiState extends State<bmi> {
   }
 
   void changeindex(int index) {
-    setState(() {
-      currentindex = index;
-    });
-  }
-
-  Widget radioButton(String value, Color color, int index) {
-    return Expanded(
-      child: Container(
-        height: 80.0,
-        margin: const EdgeInsets.symmetric(horizontal: 14.0),
-        color: currentindex == index ? Colors.red : Colors.green,
-        child: ElevatedButton(
-          onPressed: () {
-            changeindex(index);
-          },
-          child: Text(
-            value,
-            style: TextStyle(
-              color: currentindex == index ? Colors.white : color,
-            ),
-          ),
-        ),
-      ),
-    );
+    Provider.of<BmiProvider>(context, listen: false).changeIndex(index);
   }
 }
