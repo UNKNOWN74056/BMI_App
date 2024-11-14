@@ -15,7 +15,7 @@ class ElevatedButtonContainer extends StatelessWidget {
     required this.buttonText,
     required this.onPressed,
     // this.buttonColor = Colors.grey,
-    this.textColor = Colors.white,
+    this.textColor = Colors.black,
     this.width = double.infinity,
     this.height = 70,
     this.padding = const EdgeInsets.all(8.0),
@@ -32,7 +32,7 @@ class ElevatedButtonContainer extends StatelessWidget {
         onPressed: onPressed,
         style: ButtonStyle(
           //  backgroundColor: MaterialStateProperty.all<Color>(buttonColor),
-          shape: MaterialStateProperty.all<OutlinedBorder>(
+          shape: WidgetStateProperty.all<OutlinedBorder>(
             RoundedRectangleBorder(
               borderRadius: borderRadius,
             ),
